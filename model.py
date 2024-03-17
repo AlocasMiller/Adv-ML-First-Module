@@ -7,15 +7,15 @@ from catboost import CatBoostClassifier
 import joblib
 import os
 
-def data_preparation(dataset_path):
+def data_preparation(dataset):
 
     # Импортируем датафрейм
-    if (dataset_path == "test.csv"):
-        test_df = pd.read_csv(dataset_path)
+    if (dataset == "test.csv"):
+        test_df = pd.read_csv(dataset)
         targets_df = pd.read_csv('sample_submission.csv')
         train_df = pd.merge(test_df, targets_df, how='inner', on='PassengerId')
     else:
-        train_df = pd.read_csv(dataset_path)
+        train_df = pd.read_csv(dataset)
 
     # берем моду для строковых значений
     mode_features = ['HomePlanet']
@@ -58,9 +58,9 @@ def data_preparation(dataset_path):
     return train_df
 
 class ml_model:
-    def train(self, dataset_path, model_type):
+    def train(self, dataset, model_type):
 
-        train_df = data_preparation(dataset_path)
+        train_df = data_preparation(dataset)
 
         # выделяем не нужные нам признаки
         uselessFeatures = ['PassengerId', 'Cabin', 'Name']
@@ -73,19 +73,19 @@ class ml_model:
         if model_type == "cat":
             cat_model = CatBoostClassifier(iterations=100, learning_rate=0.01, depth=6, logging_level='Silent')
             cat_model.fit(X_train, y_train)
-            cat_model.save_model("catboost_model.bin")
+            cat_model.save_model("model/catboost_model.bin")
             print("CatBoost is learned")
 
 
         if model_type == "forest":
             rf_model = RandomForestClassifier(max_depth=7)
             rf_model.fit(X_train, y_train)
-            joblib.dump(rf_model, "random_forest_model.joblib")
+            joblib.dump(rf_model, "model/random_forest_model.joblib")
             print("RandomForest is learned")
 
-    def predict(self, dataset_path, model_type):
-
-        test_df = data_preparation(dataset_path)
+    def predict(self, dataset, model_type):
+        targets_df = pd.read_csv('sample_submission.csv')
+        test_df = data_preparation(dataset)
         # выделяем не нужные нам признаки
         uselessFeatures = ['PassengerId', 'Cabin', 'Name']
         # выделяем нужный нам признак
@@ -95,15 +95,19 @@ class ml_model:
         y_test = test_df[target].values
 
         if model_type == "cat":
-            cat_model = CatBoostClassifier().load_model("catboost_model.bin")
-            # predict = cat_model.predict(X_test)
-            scores = cross_val_score(cat_model, X_test, y_test, cv=10)
-            scores_mean = np.mean(scores)
-            print(scores_mean)
+            cat_model = CatBoostClassifier().load_model("model/catboost_model.bin")
+            predict = cat_model.predict(X_test).astype(bool)
+            output = pd.DataFrame({'PassengerId': targets_df['PassengerId'], 'Transported': predict})
+            output.to_csv('results/result_cat.csv', index=False)
+            # scores = cross_val_score(cat_model, X_test, y_test, cv=10)
+            # scores_mean = np.mean(scores)
+            # print(scores_mean)
 
         if model_type == "forest":
-            rf_model = joblib.load("random_forest_model.joblib")
-            # predict = rf_model.predict(X_test)
-            scores = cross_val_score(rf_model, X_test, y_test, cv=10)
-            scores_mean = np.mean(scores)
-            print(scores_mean)
+            rf_model = joblib.load("model/random_forest_model.joblib")
+            predict = rf_model.predict(X_test).astype(bool)
+            output = pd.DataFrame({'PassengerId': targets_df['PassengerId'], 'Transported': predict})
+            output.to_csv('results/result_forest.csv', index=False)
+            # scores = cross_val_score(rf_model, X_test, y_test, cv=10)
+            # scores_mean = np.mean(scores)
+            # print(scores_mean)
