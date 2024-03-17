@@ -12,6 +12,6 @@ class CLI(object):
         return self._model.predict(dataset_path, model_type)
 
 
-# if __name__ == "__main__":
-    # fire.Fire(CLI)
+if __name__ == "__main__":
+    fire.Fire(CLI)
 
