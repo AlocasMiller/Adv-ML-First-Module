@@ -1,8 +1,6 @@
 import pandas as pd
-import numpy as np
 from random import randint
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_val_score
 from catboost import CatBoostClassifier
 import joblib
 import os
@@ -10,9 +8,9 @@ import os
 def data_preparation(dataset):
 
     # Импортируем датафрейм
-    if (dataset == "test.csv"):
+    if (dataset[-8:] == "test.csv"):
         test_df = pd.read_csv(dataset)
-        targets_df = pd.read_csv('data/sample_submission.csv')
+        targets_df = pd.read_csv('adv_ml_first_module/data/sample_submission.csv')
         train_df = pd.merge(test_df, targets_df, how='inner', on='PassengerId')
     else:
         train_df = pd.read_csv(dataset)
@@ -84,14 +82,15 @@ class ml_model:
             rf_model.fit(X_train, y_train)
             if not os.path.exists("data/model"):
                 os.makedirs("data/model")
-            joblib.dump(rf_model, "data/model/random_forest_model.joblib")
+            joblib.dump(rf_model, "adv_ml_first_module/data/model/random_forest_model.joblib")
             print("RandomForest is learned")
 
     def predict(self, dataset, model_type):
-        targets_df = pd.read_csv('data/sample_submission.csv')
+        targets_df = pd.read_csv('adv_ml_first_module/data/sample_submission.csv')
         test_df = data_preparation(dataset)
         # выделяем не нужные нам признаки
         uselessFeatures = ['PassengerId', 'Cabin', 'Name']
+
         # выделяем нужный нам признак
         target = 'Transported'
 
@@ -99,23 +98,17 @@ class ml_model:
         y_test = test_df[target].values
 
         if model_type == "cat":
-            cat_model = CatBoostClassifier().load_model("data/model/catboost_model.bin")
+            cat_model = CatBoostClassifier().load_model("adv_ml_first_module/data/model/catboost_model.bin")
             predict = cat_model.predict(X_test).astype(bool)
             output = pd.DataFrame({'PassengerId': targets_df['PassengerId'], 'Transported': predict})
-            if not os.path.exists("data/results"):
-                os.makedirs("data/results")
-            output.to_csv('data/results/result_cat.csv', index=False)
-            # scores = cross_val_score(cat_model, X_test, y_test, cv=10)
-            # scores_mean = np.mean(scores)
-            # print(scores_mean)
+            if not os.path.exists("adv_ml_first_module/data/results"):
+                os.makedirs("adv_ml_first_module/data/results")
+            output.to_csv('adv_ml_first_module/data/results/result_cat.csv', index=False)
 
         if model_type == "forest":
-            rf_model = joblib.load("data/model/random_forest_model.joblib")
+            rf_model = joblib.load("adv_ml_first_module/data/model/random_forest_model.joblib")
             predict = rf_model.predict(X_test).astype(bool)
             output = pd.DataFrame({'PassengerId': targets_df['PassengerId'], 'Transported': predict})
-            if not os.path.exists("data/results"):
-                os.makedirs("data/results")
-            output.to_csv('data/results/result_forest.csv', index=False)
-            # scores = cross_val_score(cat_model, X_test, y_test, cv=10)
-            # scores_mean = np.mean(scores)
-            # print(scores_mean)
+            if not os.path.exists("adv_ml_first_module/data/results"):
+                os.makedirs("adv_ml_first_module/data/results")
+            output.to_csv('adv_ml_first_module/data/results/result_forest.csv', index=False)
