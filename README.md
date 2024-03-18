@@ -3,7 +3,7 @@
    1. Скачать репозиторий и открыть его в PyCharm(или другой IDE с поддержкой питона) 
    2. Для обучения модели запустить в терминале команду python main.py train train.csv cat для обучения CatBoostClassifier (или forest вместо cat для обучения RandomForestClassifier)
    3. Для предсказания запустить python main.py predict test.csv cat (или forest)
-   4. Проверить результат в паgке result. Для cat результат в файле result_cat.csv, для forest - result_forest.csv
+   4. Проверить результат в папке result. Для cat результат в файле result_cat.csv, для forest - result_forest.csv
 3. Как запустить с докером:
    1. Зайти в ubuntu
    2. Ввести sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
@@ -15,7 +15,7 @@
    8. Ввести sudo chmod +x /usr/local/bin/docker-compose
    9. Ввести sudo docker run hello-world
    10. Ввести docker-compoce up
-   11. Если вывело в последней строчке It's worked!!!
+   11. Если вывело в последней строчке "It's worked!!!", то докер запустился
 4. Чем пользовался:
    python = "^3.10"
    pandas = "^2.2.1"
